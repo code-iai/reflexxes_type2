@@ -1,25 +1,29 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.3)
 
 project(reflexxes_type2)
 
-include(ExternalProject)
+find_package(catkin REQUIRED)
 
-set(reflexxes_type2_VERSION 1.2.6)
-# http://www.reflexxes.ws/software/typeiirml/v1.2.6/files/ReflexxesTypeII.zip
-# https://github.com/jhu-lcsr/reflexxes_type2/blob/upstream-1.2.6/ReflexxesTypeII.zip?raw=true
+
+include(ExternalProject)
 
 set(RML_HEADER_DIR "${CMAKE_BINARY_DIR}/reflexxes-prefix/src/reflexxes/include/")
 set(RML_RELEASE_LIBRARY_DIR "${CMAKE_BINARY_DIR}/reflexxes-prefix/src/reflexxes/Linux/x64/release/lib/shared/")
 set(RML_DEBUG_LIBRARY_DIR "${CMAKE_BINARY_DIR}/reflexxes-prefix/src/reflexxes/Linux/x64/debug/lib/shared/")
 
+#To avoid problem on early check of existance of this directory
+file(MAKE_DIRECTORY ${RML_HEADER_DIR})
+
 ExternalProject_Add(
-  reflexxes
-  URL "https://github.com/jhu-lcsr/reflexxes_type2/blob/upstream-${reflexxes_type2_VERSION}/ReflexxesTypeII.zip?raw=true"
-  DOWNLOAD_NAME ReflexxesTypeII.zip
-  CONFIGURE_COMMAND ""
+  upstream_reflexxes
+  GIT_REPOSITORY https://github.com/code-iai/RMLTypeII.git
+  #GIT_TAG xx
   BINARY_DIR reflexxes-prefix/src/reflexxes/Linux
-  BUILD_COMMAND make clean64 all64
+  CONFIGURE_COMMAND make clean64
+  BUILD_COMMAND make all64
   INSTALL_COMMAND ls "${RML_HEADER_DIR}"
+  #Currently the upstream Makefile has no installation target
+  #INSTALL_DIR ${CATKIN_DEVEL_PREFIX}
   )
 
 install(
@@ -29,12 +33,12 @@ install(
   )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  install(DIRECTORY ${RML_DEBUG_LIBRARY_DIR}
+    install(DIRECTORY ${RML_DEBUG_LIBRARY_DIR}
     DESTINATION lib
     FILES_MATCHING PATTERN "*${CMAKE_SHARED_LIBRARY_SUFFIX}"
     )
 else()
-  install(DIRECTORY ${RML_RELEASE_LIBRARY_DIR}
+    install(DIRECTORY ${RML_RELEASE_LIBRARY_DIR}
     DESTINATION lib
     FILES_MATCHING PATTERN "*${CMAKE_SHARED_LIBRARY_SUFFIX}"
     )
@@ -48,4 +52,15 @@ configure_file(reflexxes_type2-config-version.cmake.in
 install(FILES ${PROJECT_BINARY_DIR}/reflexxes_type2-config.cmake DESTINATION share/reflexxes_type2/cmake)
 install(FILES ${PROJECT_BINARY_DIR}/reflexxes_type2-config-version.cmake DESTINATION share/reflexxes_type2/cmake)
 install(FILES package.xml DESTINATION share/reflexxes_type2)
+
+add_library(ReflexxesTypeII SHARED IMPORTED)
+set_target_properties(ReflexxesTypeII PROPERTIES IMPORTED_LOCATION ${RML_RELEASE_LIBRARY_DIR}/libReflexxesTypeII.so)
+add_dependencies(ReflexxesTypeII upstream_reflexxes)
+
+catkin_package(
+  LIBRARIES ReflexxesTypeII
+  INCLUDE_DIRS ${RML_HEADER_DIR}
+)
+
+#MESSAGE(WARNING "INCLUDE_DIRS: ${RML_HEADER_DIR}")
 
