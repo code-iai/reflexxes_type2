@@ -7,9 +7,10 @@ find_package(catkin REQUIRED)
 
 include(ExternalProject)
 
-set(RML_HEADER_DIR "${CMAKE_BINARY_DIR}/reflexxes-prefix/src/reflexxes/include/")
-set(RML_RELEASE_LIBRARY_DIR "${CMAKE_BINARY_DIR}/reflexxes-prefix/src/reflexxes/Linux/x64/release/lib/shared/")
-set(RML_DEBUG_LIBRARY_DIR "${CMAKE_BINARY_DIR}/reflexxes-prefix/src/reflexxes/Linux/x64/debug/lib/shared/")
+set(RML_SRC_DIR "${CMAKE_BINARY_DIR}/upstream_reflexxes-prefix/src/upstream_reflexxes")
+set(RML_HEADER_DIR "${RML_SRC_DIR}/include/")
+set(RML_RELEASE_LIBRARY_DIR "${RML_SRC_DIR}/Linux/x64/release/lib/shared/")
+set(RML_DEBUG_LIBRARY_DIR "${RML_SRC_DIR}/Linux/x64/debug/lib/shared/")
 
 #To avoid problem on early check of existance of this directory
 file(MAKE_DIRECTORY ${RML_HEADER_DIR})
@@ -18,9 +19,9 @@ ExternalProject_Add(
   upstream_reflexxes
   GIT_REPOSITORY https://github.com/code-iai/RMLTypeII.git
   #GIT_TAG xx
-  BINARY_DIR reflexxes-prefix/src/reflexxes/Linux
-  CONFIGURE_COMMAND make clean64
-  BUILD_COMMAND make all64
+  BINARY_DIR upstream_reflexxes-prefix/src/upstream_reflexxes/Linux
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND make clean64 all64
   INSTALL_COMMAND ls "${RML_HEADER_DIR}"
   #Currently the upstream Makefile has no installation target
   #INSTALL_DIR ${CATKIN_DEVEL_PREFIX}
